@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: 0ab9ffbd5c5cacbf66824a8e4724116b65a17424
+    app.openshift.io/vcs-uri: https://github.com/poonamzham/maximo-hail
+  labels:
+    app: pz-maximo-demo
+    app.kubernetes.io/instance: pz-maximo-demo
+    app.kubernetes.io/name: pz-maximo-demo-maximo-hail-pz-app
+    app.openshift.io/runtime: python
+  name: maximo-hail-pz-app
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8501
+  selector:
+    app: pz-maximo-demo
+    app.kubernetes.io/instance: pz-maximo-demo
+    app.kubernetes.io/name: pz-maximo-demo-maximo-hail-pz-app
+    app.openshift.io/runtime: python
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: 0ab9ffbd5c5cacbf66824a8e4724116b65a17424
+    app.openshift.io/vcs-uri: https://github.com/poonamzham/maximo-hail
+  labels:
+    app: pz-maximo-demo
+    app.kubernetes.io/instance: pz-maximo-demo
+    app.kubernetes.io/name: pz-maximo-demo-maximo-hail-pz-app
+    app.openshift.io/runtime: python
+  name: maximo-hail-pz-app
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: pz-maximo-demo
+      app.kubernetes.io/instance: pz-maximo-demo
+      app.kubernetes.io/name: pz-maximo-demo-maximo-hail-pz-app
+      app.openshift.io/runtime: python
+  template:
+    metadata:
+      annotations:
+        app.openshift.io/vcs-ref: 0ab9ffbd5c5cacbf66824a8e4724116b65a17424
+        app.openshift.io/vcs-uri: https://github.com/poonamzham/maximo-hail
+      creationTimestamp: null
+      labels:
+        app: pz-maximo-demo
+        app.kubernetes.io/instance: pz-maximo-demo
+        app.kubernetes.io/name: pz-maximo-demo-maximo-hail-pz-app
+        app.openshift.io/runtime: python
+    spec:
+      containers:
+      - env:
+        - name: INGRESS_HOST
+        - name: PROTOCOLS
+        - name: LOG_LEVEL
+          value: debug
+        image: quay.io/poonamzham0/maximo_demo:0ab9ffbd5c5cacbf66824a8e4724116b65a17424
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 8501
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: maximo-hail-pz-app
+        ports:
+        - containerPort: 8501
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: 0ab9ffbd5c5cacbf66824a8e4724116b65a17424
+    app.openshift.io/vcs-uri: https://github.com/poonamzham/maximo-hail
+    argocd.argoproj.io/sync-options: Validate=false
+    openshift.io/host.generated: "true"
+  labels:
+    app: pz-maximo-demo
+    app.kubernetes.io/instance: pz-maximo-demo
+    app.kubernetes.io/name: pz-maximo-demo-maximo-hail-pz-app
+    app.openshift.io/runtime: python
+  name: maximo-hail-pz-app
+spec:
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: maximo-hail-pz-app
+    weight: 100
+  wildcardPolicy: None
